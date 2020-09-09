@@ -1,5 +1,11 @@
 import TransactionsRepository from '../repositories/TransactionsRepository';
-import Transaction from '../models/Transaction';
+import Transaction, { TypeEnum } from '../models/Transaction';
+
+interface Request {
+  title: string;
+  value: number;
+  type: TypeEnum;
+}
 
 class CreateTransactionService {
   private transactionsRepository: TransactionsRepository;
@@ -8,8 +14,29 @@ class CreateTransactionService {
     this.transactionsRepository = transactionsRepository;
   }
 
-  public execute(): Transaction {
-    // TODO
+  public execute({ title, value, type }: Request): Transaction {
+    const transaction = this.transactionsRepository.create({
+      title,
+      value,
+      type,
+    });
+
+    if (type !== TypeEnum.income || type !== TypeEnum.income) {
+      throw Error('The type should be income or outcome');
+    }
+
+    if (this.hasValidBalance(value, type)) {
+      throw Error('The type should be income or outcome');
+    }
+
+    return transaction;
+  }
+
+  private hasValidBalance(value: number, type: TypeEnum): boolean {
+    return (
+      this.transactionsRepository.getBalance().total > value &&
+      type === TypeEnum.outcome
+    );
   }
 }
 
